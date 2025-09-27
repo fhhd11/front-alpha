@@ -2,11 +2,9 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'
-import { AgentDetailsProvider } from '@/components/ui/agent-details'
-import { SidebarProvider } from '@/components/ui/sidebar'
 import ContentLayout from './content-layout'
-import { ReasoningMessageProvider } from '@/components/toggle-reasoning-messages'
-import { DialogContextProvider } from '@/components/ui/agent-dialog'
+import { AuthGuard } from '@/components/auth/auth-guard'
+import ErrorBoundary from '@/components/error-boundary'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,9 +17,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Letta Chatbot with Memory Template',
+  title: 'etrl.chat - AI Chat Assistant',
   description:
-    'An example chatbot application built on the Letta API, which makes each chatbot a stateful agent (agent with memory) under the hood.'
+    'A modern AI chat assistant powered by Letta with real-time streaming and reasoning display.'
 }
 
 export default function RootLayout({
@@ -30,21 +28,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en'>
+    <html lang='en' className='dark'>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          <DialogContextProvider>
-            <SidebarProvider>
-              <AgentDetailsProvider>
-                <ReasoningMessageProvider>
-                  <ContentLayout>{children}</ContentLayout>
-                </ReasoningMessageProvider>
-              </AgentDetailsProvider>
-            </SidebarProvider>
-          </DialogContextProvider>
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <AuthGuard>
+              <ContentLayout>{children}</ContentLayout>
+            </AuthGuard>
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   )

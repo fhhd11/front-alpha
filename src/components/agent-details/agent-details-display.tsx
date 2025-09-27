@@ -32,7 +32,7 @@ function AgentDetailDisplayContent() {
           component: <AgentArchivalMemory />
         }
       ].map((section, index) => (
-        <section key={index} className='pb-4'>
+        <section key={section.title} className='pb-4'>
           <header className='text-[0.75rem] font-bold py-4'>
             {section.title}
           </header>

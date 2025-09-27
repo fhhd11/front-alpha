@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { Ellipsis, PenBox, Trash2Icon } from 'lucide-react'
+import { Ellipsis, PenBox } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,16 +30,6 @@ const OptionsMenu: React.FC<{ agentId: string }> = ({ agentId }) => {
               >
                 <PenBox size={16} />
                 Edit Agent
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                data-id={`delete-agent-button-${agentId}`}
-                className='text-red-500 hover:text-red-500 focus:text-red-500'
-                onClick={() => {
-                  setDialogType(DialogType.DeleteAgent)
-                }}
-              >
-                <Trash2Icon size={16} />
-                Delete Agent
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

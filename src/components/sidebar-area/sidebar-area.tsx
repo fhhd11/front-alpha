@@ -1,7 +1,6 @@
 import { useAgentContext } from '@/app/[agentId]/context/agent-context'
-import { useDeleteAgent } from '@/components/hooks/use-agent-state'
+import { useModifyAgent } from '@/components/hooks/use-agent-state'
 import { USE_AGENTS_KEY, useAgents } from '@/components/hooks/use-agents'
-import { useCreateAgent } from '@/components/hooks/use-create-agent'
 import { useGetRuntimeInfo } from '@/components/hooks/use-get-runtime-info'
 import { useIsConnected } from '@/components/hooks/use-is-connected'
 import { AppSidebar } from '@/components/sidebar-area/app-sidebar'
@@ -18,83 +17,34 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip'
-import { AgentState } from '@letta-ai/letta-client/api'
 import { useQueryClient } from '@tanstack/react-query'
-import { LoaderCircle, PlusIcon } from 'lucide-react'
-import { useEffect, useMemo } from 'react'
+import { LoaderCircle, LogOut } from 'lucide-react'
+import { useMemo } from 'react'
 import { SkeletonLoadBlock } from '../ui/skeleton-load-block'
-import DeleteAgentConfirmation from './delete-agent-confirmation'
 import EditAgentForm from './edit-agent-form'
+import { useSupabase } from '@/components/providers/supabase-provider'
 
-interface SidebarAreaProps {
-  canCreate: boolean
-}
-export function SidebarArea({ canCreate }: SidebarAreaProps) {
+export function SidebarArea() {
   const queryClient = useQueryClient()
-  const { agentId, setAgentId } = useAgentContext()
-  const { mutate: createAgent, isPending: isCreatingAgent } = useCreateAgent()
+  const { agentId } = useAgentContext()
   const { data: runtimeInfo, isLoading: isRuntimeInfoLoading } =
     useGetRuntimeInfo()
 
   const { data, isLoading: isAgentsLoading } = useAgents()
   const isConnected = useIsConnected()
-  const { mutate: deleteAgent } = useDeleteAgent()
+  const { mutate: modifyAgent } = useModifyAgent(agentId)
+  const { signOut, session } = useSupabase()
+
 
   const { dialogType, closeAgentDialog } = useDialogDetails()
-
-  const scrollSidebarToTop = () => {
-    const divToScroll = document.getElementById('agents-list')
-    if (divToScroll) {
-      divToScroll.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
 
   const scrollSidebarToCurrentAgent = () => {
     document.getElementById(agentId)?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleCreateAgent = () => {
-    if (isCreatingAgent) return
-    createAgent(undefined, {
-      onSuccess: (data) => {
-        queryClient.setQueriesData(
-          { queryKey: USE_AGENTS_KEY },
-          (oldData: AgentState[]) => {
-            return [data, ...oldData]
-          }
-        )
-        setAgentId(data.id)
-        scrollSidebarToTop()
-      }
-    })
+  const handleSignOut = async () => {
+    await signOut()
   }
-
-  const handleDelete = () => {
-    deleteAgent(agentId, {
-      onSuccess: () => {
-        queryClient.setQueriesData(
-          { queryKey: USE_AGENTS_KEY },
-          (oldData: AgentState[]) => {
-            const updatedData = [
-              ...oldData.filter((agent) => agent.id !== agentId)
-            ]
-            if (updatedData.length > 0) {
-              setAgentId(updatedData[0].id)
-              scrollSidebarToTop()
-            }
-            return updatedData
-          }
-        )
-        closeAgentDialog()
-      }
-    })
-  }
-
-  useEffect(() => {
-    if (!isAgentsLoading && !data?.length && canCreate) {
-      handleCreateAgent()
-    }
-  }, [data, isAgentsLoading, canCreate])
 
   const hostname = useMemo(() => {
     if (runtimeInfo?.LETTA_BASE_URL) {
@@ -132,23 +82,14 @@ export function SidebarArea({ canCreate }: SidebarAreaProps) {
             </TooltipTrigger>
           </Tooltip>
         </div>
-        <div data-id='create-agent-button' className='flex justify-end p-2'>
-          {canCreate && (
-            <Button
-              disabled={isCreatingAgent || isLoading || !hostname}
-              type='button'
-              onClick={() => {
-                handleCreateAgent()
-              }}
-              className='inline-flex size-3 h-fit items-center justify-center whitespace-nowrap bg-transparent font-medium text-primary shadow-none ring-offset-background transition-colors hover:hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
-            >
-              {isCreatingAgent ? (
-                <LoaderCircle className='animate-spin' size={17} />
-              ) : (
-                <PlusIcon width={16} height={16} />
-              )}
-            </Button>
-          )}
+        <div data-id='sign-out-button' className='flex justify-end p-2'>
+          <Button
+            type='button'
+            onClick={handleSignOut}
+            className='inline-flex size-3 h-fit items-center justify-center whitespace-nowrap bg-transparent font-medium text-primary shadow-none ring-offset-background transition-colors hover:hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+          >
+            <LogOut width={16} height={16} />
+          </Button>
         </div>
       </div>
 
@@ -158,17 +99,6 @@ export function SidebarArea({ canCreate }: SidebarAreaProps) {
           data-id='edit-agent-dialog'
           title='Edit agent'
           content={<EditAgentForm agentId={agentId} />}
-        />
-      )}
-      {dialogType === DialogType.DeleteAgent && (
-        <AgentDialog
-          title='Delete agent?'
-          content={
-            <DeleteAgentConfirmation
-              agentId={agentId}
-              handleDelete={handleDelete}
-            />
-          }
         />
       )}
     </Sidebar>

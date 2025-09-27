@@ -1,59 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import client from '@/config/letta-client'
-import defaultAgent from '@/default-agent'
-import { getUserTagId, getUserId } from './helpers'
+import { backendClient } from '@/config/backend-client'
 
-async function getAgents(req: NextRequest) {
-  const userId = getUserId(req)
-  if (!userId) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+async function getAgent(req: NextRequest) {
+  // Try both lowercase and uppercase header names
+  const authHeader = req.headers.get('authorization') || req.headers.get('Authorization')
+  if (!authHeader) {
+    return NextResponse.json({ error: 'Authorization header is required' }, { status: 401 })
   }
 
+  // Extract token from Bearer header
+  // const token = authHeader.replace('Bearer ', '')
+
   try {
-    const agents = await client.agents.list({
-      tags: getUserTagId(userId),
-      matchAllTags: true,
-    })
-    const sortedAgents = agents.sort((a, b) => {
-      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0
-      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0
-      return dateB - dateA
-    })
-    return NextResponse.json(sortedAgents)
+    // Get user info from backend
+    const userInfo = await backendClient.get('/api/v1/me', authHeader)
+    
+    // Check if user has agents array
+    if (!userInfo.agents || !Array.isArray(userInfo.agents) || userInfo.agents.length === 0) {
+      return NextResponse.json({ error: 'No agents found for user' }, { status: 404 })
+    }
+
+    // Normalize agent_id to id for compatibility with AgentState interface
+    const normalizedAgents = userInfo.agents.map((agent: { agent_id?: string; id?: string; [key: string]: unknown }) => ({
+      ...agent,
+      id: agent.agent_id || agent.id
+    }))
+    
+    return NextResponse.json(normalizedAgents)
   } catch (error) {
-    console.error('Error fetching agents:', error)
+    console.error('Error fetching agent:', error)
     return NextResponse.json(
-      { error: 'Error fetching agents' },
+      { error: 'Error fetching agent' },
       { status: 500 }
     )
   }
 }
 
-async function createAgent(req: NextRequest) {
-  // ADD YOUR OWN AGENTS HERE
-  const DEFAULT_MEMORY_BLOCKS = defaultAgent.DEFAULT_MEMORY_BLOCKS
-  const DEFAULT_LLM = defaultAgent.DEFAULT_LLM
-  const DEFAULT_EMBEDDING = defaultAgent.DEFAULT_EMBEDDING
-
-  const userId = getUserId(req)
-  if (!userId) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
-  }
-
-  try {
-    const newAgent = await client.agents.create({
-      memoryBlocks: DEFAULT_MEMORY_BLOCKS,
-      model: DEFAULT_LLM,
-      embedding: DEFAULT_EMBEDDING,
-      tags: getUserTagId(userId)
-    })
-
-    return NextResponse.json(newAgent)
-  } catch (error) {
-    console.error('Error creating agent:', error)
-    return NextResponse.json({ error: 'Error creating agent' }, { status: 500 })
-  }
-}
-
-export const GET = getAgents
-export const POST = createAgent
+// Remove createAgent function as agents are created automatically by backend
+export const GET = getAgent

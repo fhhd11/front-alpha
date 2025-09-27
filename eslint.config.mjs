@@ -1,6 +1,8 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import typescriptParser from '@typescript-eslint/parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,15 +17,18 @@ const eslintConfig = [
     'next/typescript',
     'prettier',
     'plugin:tailwindcss/recommended',
-    'plugin:@typescript-eslint/recommended',
   ),
   {
     ignores: ['node_modules', 'dist', 'build', '.next'],
   },
   {
-    parser: '@typescript-eslint/parser',
-  },
-  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: {
+      parser: typescriptParser,
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+    },
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
     },

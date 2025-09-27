@@ -18,13 +18,13 @@ const MessagePill = (props: MessagePillProps) => {
     <div
       {...props}
       className={cn(
-        'flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm',
+        'flex w-max max-w-[75%] flex-col gap-2 rounded-xl px-4 py-3 text-sm shadow-lg transition-all duration-300 hover:shadow-xl',
         sender === ROLE_TYPE.USER
-          ? 'ml-auto bg-primary text-primary-foreground'
-          : 'bg-muted'
+          ? 'ml-auto glass bg-gradient-to-r from-primary to-primary/80 text-white border border-primary/20'
+          : 'glass bg-gradient-to-r from-muted to-muted/80 border border-border/20 text-white'
       )}
     >
-      <Markdown>{message}</Markdown>
+      <Markdown className="prose prose-sm max-w-none prose-invert [&>*]:text-white [&>p]:text-white [&>ul]:text-white [&>ol]:text-white [&>li]:text-white [&>strong]:text-white [&>em]:text-white [&>code]:text-white [&>pre]:text-white">{message}</Markdown>
     </div>
   )
 }

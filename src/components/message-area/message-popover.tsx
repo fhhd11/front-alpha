@@ -34,7 +34,7 @@ export const MessagePopover = (props: MessagePopoverProps) => {
           .map((card, index) => (
             <Card
               data-id={`message-popover-card-${index}`}
-              key={index}
+              key={card.title}
               onClick={() => {
                 sendMessage({
                   text: card.action

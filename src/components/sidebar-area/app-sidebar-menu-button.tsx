@@ -7,23 +7,22 @@ import OptionsMenu from './options-menu'
 
 export const AppSidebarMenuButton: React.FC<{
   agent: AgentState
-}> = ({ agent }) => {
+  isActive?: boolean
+  onClick?: () => void
+}> = ({ agent, isActive, onClick }) => {
   const isMobile = useIsMobile()
   const { toggleSidebar } = useSidebar()
-  const { agentId, setAgentId } = useAgentContext()
 
   return (
     <div
-      className={`border-l-4 ${agent.id === agentId ? 'border-black' : 'border-gray-200'} hover:border-black`}
+      className={`border-l-4 ${isActive ? 'border-black' : 'border-gray-200'} hover:border-black`}
     >
       <SidebarMenuButton
         id={agent.id}
         asChild
-        isActive={agent.id === agentId}
+        isActive={isActive}
         className='overflow-hidden whitespace-nowrap h-full gap-0.5 text-gray-50 hover:text-black'
-        onClick={() => {
-          setAgentId(agent.id)
-        }}
+        onClick={onClick}
       >
         <div className='flex group justify-between'>
           <div

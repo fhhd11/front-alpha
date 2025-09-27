@@ -1,10 +1,10 @@
 <a href="https://docs.letta.com/">
   <img alt="Stateful AI agent chatbot template built with Letta and Next.js." src="/assets/chatbot_template_header_2x.png">
-  <h1 align="center">Letta Chatbot Template</h1>
+  <h1 align="center">Letta Chatbot Example</h1>
 </a>
 
 <p align="center">
-  Deploy your own AI chatbot using <a href="https://docs.letta.com/">Letta</a> to create agents that can learn over time.
+  A production-ready AI chatbot template using <a href="https://docs.letta.com/">Letta</a> with Supabase authentication, real-time streaming, and reasoning display.
 </p>
 
 <div align="center">
@@ -32,16 +32,12 @@
 
 ## ✨ Features
 
-- [Letta](https://github.com/letta-ai/letta)
-
-  - Formerly known as **MemGPT**, Letta is an open-source framework designed for building **stateful LLM applications**. Our chatbot webapp template showcases powerful core features of Letta.
-
-- Static defined agent state
-  - Define your agent state in the `default-agent.json` file. This file contains the initial state of your agents, including the LLM model, user profile, agent persona, and other configurations.
-- Cookie-based sessions
-  - Includes an implementation of cookie-based sessions to emulate users.
-  - Can be disabled by setting `USE_COOKIE_BASED_AUTHENTICATION=false` to view all your agents from the ADE.
-  - Different chat histories for different browsers. Tracks anonymous users across requests without requiring authentication.
+- **Real-time streaming** - Token-by-token message streaming with reasoning display
+- **Supabase authentication** - Secure user authentication and session management
+- **Reasoning visualization** - Display AI reasoning process in real-time
+- **Backend proxy** - Secure API calls through authenticated backend
+- **Modern UI** - Built with Next.js 15, React, TypeScript, and Shadcn UI
+- **Production ready** - Clean code, proper error handling, and optimized performance
 
 ## 📦 What's included
 
@@ -76,43 +72,62 @@
 
 # ⚡️ Quickstart
 
-### 📋 What you need before starting
+### 📋 Prerequisites
 
-- [Node.js](https://nodejs.org/en/download/)
-- [npm](https://www.npmjs.com/get-npm)
-- [Docker](https://docs.docker.com/get-docker/)
+- [Node.js](https://nodejs.org/en/download/) (v18 or higher)
+- [npm](https://www.npmjs.com/get-npm) or [yarn](https://yarnpkg.com/)
+- A Supabase project with authentication enabled
+- A backend server that proxies Letta API requests with JWT authentication
+- A running Letta server (see [Letta quickstart](https://docs.letta.com/quickstart))
 
 ## 🚀 Running the app locally
 
-#### 🔸 Set up your local Letta server
+#### 🔸 Set up your Supabase project
 
-Follow the [quickstart guide](https://docs.letta.com/quickstart) to run your local Letta server.
-You can run your own Letta server using [Letta Desktop](https://docs.letta.com/quickstart/desktop) or [Docker](https://docs.letta.com/quickstart/docker).
-By default, the Letta server will run on `http://localhost:8283`.
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. Enable authentication in your Supabase dashboard
+3. Note down your project URL and anon key
+
+#### 🔸 Set up your backend server
+
+Your backend should:
+- Support Supabase JWT authentication
+- Have an endpoint `/api/v1/me` that returns user info including `agents` array
+- Proxy all Letta API requests under `/api/v1/letta/{path}` with JWT validation
+- Support streaming endpoints for real-time message delivery
 
 #### 🔸 Setup and run the app
-
-0️⃣ Have a [Letta Cloud](https://docs.letta.com/guides/cloud/overview) account or your local Letta server ready.
 
 1️⃣ Clone the repository and install dependencies:
 
 ```bash
 # Clone the repository
-git clone git@github.com:letta-ai/letta-chatbot-template.git
+git clone https://github.com/your-username/letta-chatbot-example.git
 
 # Navigate to the project directory
-cd letta-chatbot-template
+cd letta-chatbot-example
 
 # Install dependencies
 npm install
-
-# Set environment variables
-cp .env.template .env
 ```
 
-2️⃣ Update the `.env` file with your Letta configurations
+2️⃣ Set up environment variables:
 
-3️⃣ Update the default memory block values in the `default-agent.json` file
+```bash
+# Copy the example environment file
+cp env.example .env.local
+```
+
+3️⃣ Update the `.env.local` file with your configurations:
+
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Backend Configuration
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+```
 
 4️⃣ Run the app
 
@@ -122,17 +137,71 @@ npm run dev
 
 ### Environment variables
 
-Environment variables can be controlled by setting them in your `.env` file or by setting them in your deployment environment.
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon key  
+- `NEXT_PUBLIC_BACKEND_URL` - URL of your backend server (default: `http://localhost:8000`)
 
-- `LETTA_API_KEY` - Your Letta access token, if not using cloud this is usually optional.
-- `LETTA_BASE_URL` - The URL of your Letta server. Default is `http://localhost:8283`.
-- `NEXT_PUBLIC_CREATE_AGENTS_FROM_UI` - If set to `true` will show a `+` button in the sidebar to create new agents from the `default-agent.json` file. Default is `true`.
-- `USE_COOKIE_BASED_AUTHENTICATION` - If set to `true` will use cookie-based sessions to emulate users. Default is `true`.
+> **Note**: Make sure your backend server is running and accessible at the specified URL before starting the frontend.
 
 #### 🔸 See the app in action
 
 Once the app is running, open your web browser and navigate to [http://localhost:3000](http://localhost:3000).
 
-## ☁️ Running the app with Letta Cloud
+## 🔧 Backend Requirements
 
-👾 TBA. Stayed tuned! [Follow us on Discord](https://discord.com/invite/letta) for updates.
+Your backend server should implement the following endpoints:
+
+### Authentication
+- Validate Supabase JWT tokens
+- Return user information including `agents` array
+
+### API Endpoints
+- `GET /api/v1/me` - Returns current user info with `agents` array
+- `GET /api/v1/letta/agents/{agentId}` - Proxy to Letta agent details
+- `PATCH /api/v1/letta/agents/{agentId}` - Proxy to Letta agent updates
+- `GET /api/v1/letta/agents/{agentId}/messages` - Proxy to Letta messages
+- `POST /api/v1/letta/agents/{agentId}/messages/stream` - Proxy to Letta streaming messages
+- `GET /api/v1/letta/agents/{agentId}/passages` - Proxy to Letta archival memory
+
+## 🏗️ Architecture
+
+This template implements a production-ready architecture with:
+
+- **Supabase Authentication** - Secure user authentication and session management
+- **Backend Proxy** - All Letta API calls go through authenticated backend
+- **Real-time Streaming** - Token-by-token message streaming with reasoning display
+- **Modern Stack** - Next.js 15, React, TypeScript, and Shadcn UI
+- **Clean Code** - No debug logs, proper error handling, optimized performance
+
+## 🚀 Deployment
+
+### Railway (Recommended)
+
+1. Fork this repository
+2. Connect your GitHub account to [Railway](https://railway.app)
+3. Create a new project and import the forked repository
+4. Set environment variables in Railway dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_BACKEND_URL`
+5. Deploy!
+
+### Vercel
+
+1. Fork this repository
+2. Connect your GitHub account to Vercel
+3. Import the forked repository
+4. Set environment variables in Vercel dashboard
+5. Deploy!
+
+### Other Platforms
+
+This is a standard Next.js application and can be deployed to any platform that supports Node.js:
+- Netlify
+- DigitalOcean App Platform
+- AWS Amplify
+- Docker containers
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

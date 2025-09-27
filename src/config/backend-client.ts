@@ -10,12 +10,18 @@ export const backendClient = {
     
     const finalHeaders = {
       'Content-Type': 'application/json',
+      'Accept-Encoding': 'identity', // Отключаем сжатие
+      'User-Agent': 'NextJS-Client',
       ...options.headers,
     }
+    
+    // Добавляем таймаут 60 секунд для создания агента
+    const timeoutMs = endpoint.includes('/agents/create') ? 60000 : 30000
     
     const response = await fetch(url, {
       ...options,
       headers: finalHeaders,
+      signal: AbortSignal.timeout(timeoutMs)
     })
     
     if (!response.ok) {
@@ -24,7 +30,16 @@ export const backendClient = {
       throw new Error(`Backend request failed: ${response.status} ${response.statusText} - ${errorText}`)
     }
     
-    return response.json()
+    // Проверяем Content-Type перед парсингом JSON
+    const contentType = response.headers.get('content-type')
+    if (contentType && contentType.includes('application/json')) {
+      return response.json()
+    } else {
+      // Если не JSON, возвращаем текст
+      const text = await response.text()
+      console.log('Non-JSON response:', text)
+      return { message: text }
+    }
   },
   
   async get(endpoint: string, authHeader?: string) {

@@ -38,3 +38,5 @@ async function getAgent(req: NextRequest) {
 
 // Remove createAgent function as agents are created automatically by backend
 export const GET = getAgent
+
+

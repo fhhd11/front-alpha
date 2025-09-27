@@ -45,7 +45,7 @@ export function AuthForm() {
     try {
       const agentData = {
         template_id: "test-bot",
-        agent_name: "My Test Agent",
+        agent_name: "My Agent",
         use_latest: true,
         variables: {
           custom_var: "value"

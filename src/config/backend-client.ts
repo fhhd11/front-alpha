@@ -1,13 +1,6 @@
 // Backend API client configuration
-const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL!
 
-// Debug logging for production
-if (typeof window !== 'undefined') {
-  console.log('Backend Config:', {
-    url: BACKEND_BASE_URL,
-    isLocalhost: BACKEND_BASE_URL.includes('localhost')
-  })
-}
 
 export const backendClient = {
   baseUrl: BACKEND_BASE_URL,

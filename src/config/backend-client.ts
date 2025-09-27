@@ -1,7 +1,5 @@
 // Backend API client configuration
-import { backendUrl } from '@/lib/env'
-
-const BACKEND_BASE_URL = backendUrl
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 
 // Debug logging for production
 if (typeof window !== 'undefined') {
